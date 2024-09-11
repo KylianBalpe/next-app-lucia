@@ -22,8 +22,12 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { signUp } from "@/lib/actions/authentication-action";
+import { useRouter } from "next/navigation";
 
 export default function SignUpForm() {
+	const router = useRouter();
 	const form = useForm<z.infer<typeof SignUpFormSchema>>({
 		resolver: zodResolver(SignUpFormSchema),
 		defaultValues: {
@@ -35,10 +39,20 @@ export default function SignUpForm() {
 	});
 
 	// 2. Define a submit handler.
-	function onSubmit(values: z.infer<typeof SignUpFormSchema>) {
-		// Do something with the form values.
-		// ✅ This will be type-safe and validated.
-		console.log(values);
+	async function onSubmit(values: z.infer<typeof SignUpFormSchema>) {
+		try {
+			const res = await signUp(values);
+
+			if (res?.errors) {
+				toast(res?.errors);
+				return;
+			}
+
+			toast("Registered successfully");
+			router.push("/");
+		} catch (error) {
+			console.error(error);
+		}
 	}
 
 	return (
